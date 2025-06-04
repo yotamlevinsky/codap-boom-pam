@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <title>התפלגות גילאים מה-CODAP</title>
+    <script src="https://codap.concord.org/releases/latest/common/codapinterface.js"></script>
+    <style>
+        body { font-family: Arial; margin: 2em; }
+        #output { margin-top: 2em; }
+    </style>
+</head>
+<body>
+    <button id="getAges">הצג התפלגות גילאים</button>
+    <div id="output"></div>
+
+    <script>
+        document.getElementById('getAges').onclick = async function() {
+            // בקשת הערכים מהטבלה (הנח שהטבלה collection[משהו].case, ויש משתנה age)
+            const result = await codapInterface.sendRequest({
+                action: 'getCaseValues',
+                resource: 'dataContext[clipboard data].collection[cases].case',
+                values: ['גיל']
+            });
+
+            const ages = result.values.map(row => row[0]).filter(a => a !== null && a !== undefined);
+            if (ages.length === 0) {
+                document.getElementById('output').innerText = "לא נמצאו ערכי גיל!";
+                return;
+            }
+
+            // חשב שכיחות של כל גיל
+            const freq = {};
+            for (const age of ages) {
+                freq[age] = (freq[age] || 0) + 1;
+            }
+
+            // הצגה
+            let html = "<h3>התפלגות גילאים:</h3><ul>";
+            for (const age in freq) {
+                html += `<li>גיל ${age}: ${freq[age]} שם</li>`;
+            }
+            html += "</ul>";
+            document.getElementById('output').innerHTML = html;
+        };
+    </script>
+</body>
+</html>
